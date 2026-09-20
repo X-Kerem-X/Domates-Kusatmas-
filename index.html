@@ -1,0 +1,492 @@
+!DOCTYPE html
+html lang=tr
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no
+    titleHıyar İntikamı Sos Saati - Mobiltitle
+    style
+        @import url('httpsfonts.googleapis.comcss2family=Cinzelwght@700&family=Robotowght@400;700&display=swap');
+
+        body {
+            margin 0; padding 0;
+            background #050505; color #fff;
+            font-family 'Roboto', sans-serif;
+            overflow hidden; user-select none;
+            touch-action none;
+        }
+        canvas { display block; }
+
+        #ui-layer {
+            position absolute; top 0; left 0; width 100%; height 100%; pointer-events none;
+        }
+        .top-bar {
+            position absolute; top 15px; left 20px; text-shadow 1px 1px 2px #000;
+        }
+        .hp-container {
+            width 200px; height 22px; background #222; border 2px solid #555; border-radius 15px; overflow hidden; margin-top 5px; position relative;
+        }
+        .hp-bar {
+            height 100%; background linear-gradient(90deg, #c0392b, #e74c3c); transition width 0.2s;
+        }
+        .hp-text {
+            position absolute; width 100%; text-align center; top 2px; font-size 12px; font-weight bold;
+        }
+        
+        .mobile-controls {
+            position absolute; bottom 0; left 0; width 100%; height 100%; pointer-events none; display flex; justify-content space-between; align-items flex-end; padding 20px; box-sizing border-box;
+        }
+        #joystick-base {
+            width 120px; height 120px; background rgba(255,255,255,0.1); border 2px solid rgba(255,255,255,0.3); border-radius 50%; position relative; pointer-events auto;
+        }
+        #joystick-knob {
+            width 50px; height 50px; background rgba(46,204,113,0.7); border-radius 50%; position absolute; top 35px; left 35px; pointer-events none;
+        }
+        .action-buttons {
+            display flex; gap 15px; pointer-events auto; padding-bottom 10px;
+        }
+        .mob-btn {
+            width 70px; height 70px; background rgba(0,0,0,0.6); border 2px solid #2ecc71; border-radius 50%; display flex; align-items center; justify-content center; font-size 24px; font-weight bold; position relative; color #fff;
+        }
+        .skill-overlay {
+            position absolute; bottom 0; left 0; width 100%; background rgba(255,0,0,0.5); border-radius 50%; height 0%; transition height 0.1s; pointer-events none;
+        }
+
+        .screen-overlay {
+            position absolute; top 0; left 0; width 100%; height 100%; background rgba(10,10,10,0.95);
+            display flex; flex-direction column; align-items center; justify-content center; z-index 10; pointer-events auto;
+        }
+        .story-box {
+            background rgba(20, 20, 20, 0.8); border 2px solid #2ecc71; border-radius 10px; padding 20px; max-width 85%; margin-bottom 30px; box-shadow 0 0 20px rgba(46, 204, 113, 0.2);
+        }
+        .story-text {
+            font-family 'Cinzel', serif; font-size 16px; color #f1c40f; text-align left; line-height 1.6; text-shadow 1px 1px 2px #000;
+        }
+        .btn {
+            background #2ecc71; color #000; border none; padding 15px 30px; font-size 18px; font-weight bold; cursor pointer; border-radius 8px; box-shadow 0 4px 15px rgba(46, 204, 113, 0.4); text-transform uppercase;
+        }
+        .cards-container { display flex; flex-direction column; gap 15px; margin-top 15px; width 90%; max-width 350px; }
+        .card { background #1a1a1a; border 2px solid #f39c12; border-radius 12px; padding 15px; text-align center; cursor pointer; }
+        .card h3 { color #f39c12; margin 0 0 5px 0; }
+        .card p { font-size 13px; color #ccc; margin 0; }
+        .card .type { font-size 10px; color #2ecc71; text-transform uppercase; display block; margin-bottom 5px; }
+        .hidden { display none !important; }
+    style
+head
+body
+
+    canvas id=gameCanvascanvas
+
+    div id=ui-layer class=hidden
+        div class=top-bar
+            h3 id=wave-text style=margin0; color#2ecc71; font-size 16px;Dalga 1h3
+            div class=hp-container
+                div class=hp-bar id=hp-bardiv
+                div class=hp-text id=hp-text100  100div
+            div
+            div style=margin-top3px; font-size 12px;Kalan Domates span id=enemy-count10spandiv
+        div
+
+        div class=mobile-controls
+            div id=joystick-base
+                div id=joystick-knobdiv
+            div
+            div class=action-buttons
+                div class=mob-btn ontouchstart=player.attack(); event.preventDefault(); onmousedown=player.attack()⚔️div
+                div class=mob-btn ontouchstart=player.special(); event.preventDefault(); onmousedown=player.special()🌪️div class=skill-overlay id=cd-specialdivdiv
+            div
+        div
+    div
+
+    div id=story-screen class=screen-overlay
+        h1 style=color #2ecc71; font-family 'Cinzel', serif; font-size 28px; text-align center; margin-bottom 20px;HIYAR İNTİKAM SAVAŞIh1
+        div class=story-box
+            div class=story-text
+                Yüzyıllar boyunca Hıyar Krallığı, Sebze Diyarı'nın koruyucusu oldu.brbr
+                Ancak Büyük Salata Savaşında Kızıl İblisler (Domatesler) acımasızca saldırdı ve köyü darmadağın etti.brbr
+                Krallık düştü. Geriye hayatta kalan tek bir savaşçı kaldı bUsta Hıyarb.brbr
+                Kılıcını çekme vakti geldi. Kırmızı soslar dökülene kadar savaş ve halkının intikamını al!
+            div
+        div
+        button class=btn onclick=startGame()İntikamı Başlatbutton
+    div
+
+    div id=upgrade-screen class=screen-overlay hidden
+        h2 style=color #2ecc71; font-family 'Cinzel', serif; margin0;Dalga Tamamlandı!h2
+        p style=font-size14px; text-aligncenter;Canın yenilendi. Bir yetenek seçp
+        div class=cards-container id=cards-containerdiv
+    div
+
+    div id=gameover-screen class=screen-overlay hidden
+        h1 style=color #e74c3c; font-family 'Cinzel', serif; font-size 35px;SALATA OLDUN!h1
+        p id=final-stats style=font-size 16px;p
+        button class=btn onclick=location.reload()Tekrar Denebutton
+    div
+
+    script
+        const canvas = document.getElementById(gameCanvas);
+        const ctx = canvas.getContext(2d);
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let state = STORY;
+        let map = { width 1400, height 1000 };
+        let camera = { x 0, y 0 };
+        
+        let moveVec = { x 0, y 0 };
+
+        const base = document.getElementById(joystick-base);
+        const knob = document.getElementById(joystick-knob);
+        let joystickTouchId = null;
+
+        base.addEventListener(touchstart, e = {
+            e.preventDefault();
+            let touch = e.changedTouches[0];
+            joystickTouchId = touch.identifier;
+            updateJoystick(touch);
+        });
+
+        window.addEventListener(touchmove, e = {
+            if(joystickTouchId === null) return;
+            for(let touch of e.changedTouches) {
+                if(touch.identifier === joystickTouchId) {
+                    updateJoystick(touch);
+                }
+            }
+        });
+
+        window.addEventListener(touchend, e = {
+            if(joystickTouchId === null) return;
+            for(let touch of e.changedTouches) {
+                if(touch.identifier === joystickTouchId) {
+                    joystickTouchId = null;
+                    moveVec = { x 0, y 0 };
+                    knob.style.transform = `translate(0px, 0px)`;
+                }
+            }
+        });
+
+        function updateJoystick(touch) {
+            let rect = base.getBoundingClientRect();
+            let centerX = rect.left + rect.width  2;
+            let centerY = rect.top + rect.height  2;
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            let dist = Math.hypot(dx, dy);
+            let maxDist = 40;
+
+            if(dist  maxDist) {
+                dx = (dx  dist)  maxDist;
+                dy = (dy  dist)  maxDist;
+            }
+
+            knob.style.transform = `translate(${dx}px, ${dy}px)`;
+            moveVec = { x dx  maxDist, y dy  maxDist };
+        }
+
+        const player = {
+            x map.width  2, y map.height  2,
+            radius 20, speed 4.5,
+            hp 100, maxHp 100,
+            title Hıyar, weapon Katana, angle 0,
+            attackTimer 0, specialTimer 0, specialCooldown 180, isSpinning false, spinDuration 30,
+            lifeSteal 0, dmgMult 1,
+            
+            attack function() {
+                if(this.attackTimer = 0 && !this.isSpinning && state === PLAYING) {
+                    this.attackTimer = 25;
+                    if(this.weapon === Yay) {
+                        projectiles.push(new Projectile(this.x, this.y, this.angle, 15, 30  this.dmgMult, #f1c40f, 600));
+                    } else {
+                        let range = this.weapon === Kral Kılıcı  160  (this.weapon === Süper Katana  110  75);
+                        let dmg = this.weapon === Kral Kılıcı  120  (this.weapon === Süper Katana  70  40);
+                        slashEffects.push({ x this.x, y this.y, angle this.angle, radius range, life 10, color #39ff14 });
+                        checkMeleeHit(range, dmg  this.dmgMult);
+                    }
+                }
+            },
+            special function() {
+                if(this.specialTimer = 0 && !this.isSpinning && state === PLAYING) {
+                    this.isSpinning = true;
+                    this.specialTimer = this.specialCooldown;
+                }
+            }
+        };
+
+        let enemies = [], splatters = [], projectiles = [], slashEffects = [];
+        let wave = 1, enemiesToKill = 10, enemiesKilled = 0, spawnTimer = 0, maxSpawnAtOnce = 5;
+
+        const allUpgrades = [
+            { id yay, type Silah, name Yay, desc Uzak menzilli ok atışları yaparsın. },
+            { id super, type Silah, name Süper Katana, desc Kılıcın menzili ve hasarı devasa artar. },
+            { id kral, type Silah, name Kral Kılıcı, desc Ölümcül hasar., minWave 3 },
+            { id hiz, type Pasif, name Çevik Hıyar, desc Hareket hızını arttırır. },
+            { id can_calma, type Pasif, name Vampir Hıyar, desc Düşman öldürdükçe can yenilersin. },
+            { id usta, type Ünvan, name Usta Hıyar, desc Hasarın x2 olur., minWave 3 }
+        ];
+
+        class Enemy {
+            constructor(x, y, isBoss = false) {
+                this.x = x; this.y = y; this.isBoss = isBoss;
+                this.radius = isBoss  28  18;
+                this.hp = isBoss  (100 + wave  50)  (30 + wave  10);
+                this.maxHp = this.hp;
+                this.speed = isBoss  1.5  (2 + Math.random()  1.5);
+                this.hitFlash = 0;
+            }
+            update() {
+                if(this.hitFlash  0) this.hitFlash--;
+                let dx = player.x - this.x, dy = player.y - this.y, dist = Math.hypot(dx, dy);
+                if(dist  0) {
+                    this.x += (dx  dist)  this.speed;
+                    this.y += (dy  dist)  this.speed;
+                }
+                if(dist  this.radius + player.radius) {
+                    player.hp -= this.isBoss  0.8  0.3;
+                    if(player.hp = 0) gameOver();
+                }
+            }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y);
+                ctx.fillStyle = this.hitFlash  0  #fff  (this.isBoss  #8b0000  #e74c3c);
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI  2); ctx.fill();
+                
+                ctx.fillStyle = #2ecc71;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -12); ctx.lineTo(8, -12); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, angle, speed, dmg, color, life) {
+                this.x = x; this.y = y; this.vx = Math.cos(angle)speed; this.vy = Math.sin(angle)speed;
+                this.dmg = dmg; this.color = color; this.life = life; this.active = true;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy; this.life--;
+                if(this.life = 0) this.active = false;
+                for(let e of enemies) {
+                    if(Math.hypot(e.x - this.x, e.y - this.y)  e.radius + 5) {
+                        damageEnemy(e, this.dmg); this.active = false; break;
+                    }
+                }
+            }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(Math.atan2(this.vy, this.vx));
+                ctx.fillStyle = this.color; ctx.fillRect(0, -2, 20, 4); ctx.restore();
+            }
+        }
+
+        function checkMeleeHit(range, dmg) {
+            for(let i = enemies.length - 1; i = 0; i--) {
+                let e = enemies[i];
+                if(Math.hypot(e.x - player.x, e.y - player.y)  range) {
+                    damageEnemy(e, dmg);
+                }
+            }
+        }
+
+        function damageEnemy(e, dmg) {
+            e.hp -= dmg; e.hitFlash = 8;
+            if(e.hp = 0) {
+                splatters.push({x e.x, y e.y, size e.radius  1.5, alpha 1});
+                enemies.splice(enemies.indexOf(e), 1);
+                enemiesKilled++;
+                if(player.lifeSteal  0) player.hp = Math.min(player.maxHp, player.hp + player.lifeSteal);
+                if(enemiesKilled = enemiesToKill) triggerWaveClear();
+            }
+        }
+
+        function update() {
+            if(state !== PLAYING) return;
+
+            player.x += moveVec.x  player.speed;
+            player.y += moveVec.y  player.speed;
+
+            if(moveVec.x !== 0  moveVec.y !== 0) {
+                player.angle = Math.atan2(moveVec.y, moveVec.x);
+            }
+
+            player.x = Math.max(player.radius, Math.min(map.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(map.height - player.radius, player.y));
+
+            camera.x = player.x - canvas.width  2;
+            camera.y = player.y - canvas.height  2;
+
+            if(player.attackTimer  0) player.attackTimer--;
+            if(player.specialTimer  0) player.specialTimer--;
+
+            if(player.isSpinning) {
+                player.spinDuration--;
+                checkMeleeHit(100, 10  player.dmgMult);
+                
+                if (player.spinDuration % 3 === 0) {
+                     slashEffects.push({ x player.x, y player.y, angle Math.random()  Math.PI  2, radius 100, life 5, color #39ff14 });
+                }
+
+                if(player.spinDuration = 0) {
+                    player.isSpinning = false;
+                    player.spinDuration = 30;
+                }
+            }
+
+            if(enemies.length  maxSpawnAtOnce && enemiesKilled + enemies.length  enemiesToKill) {
+                spawnTimer++;
+                if(spawnTimer  30) {
+                    let angle = Math.random()  Math.PI  2;
+                    let sx = player.x + Math.cos(angle)300, sy = player.y + Math.sin(angle)300;
+                    let isBoss = (enemiesToKill - enemiesKilled  3) && wave = 2;
+                    enemies.push(new Enemy(sx, sy, isBoss));
+                    spawnTimer = 0;
+                }
+            }
+
+            enemies.forEach(e = e.update());
+            projectiles.forEach((p, index) = { p.update(); if(!p.active) projectiles.splice(index, 1); });
+            updateUI();
+        }
+
+        function draw() {
+            ctx.fillStyle = #111411;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if(state !== PLAYING) return;
+
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            ctx.strokeStyle = rgba(46, 204, 113, 0.05); ctx.lineWidth = 2;
+            for(let i = 0; i = map.width; i+=100) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, map.height); ctx.stroke(); }
+            for(let i = 0; i = map.height; i+=100) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(map.width, i); ctx.stroke(); }
+
+            splatters.forEach(s = {
+                ctx.fillStyle = `rgba(180, 20, 20, ${s.alpha})`;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI2); ctx.fill();
+                s.alpha = Math.max(0, s.alpha - 0.001);
+            });
+
+             Kılıç savurma efekti çizimi
+            for(let i = slashEffects.length - 1; i = 0; i--) {
+                let s = slashEffects[i];
+                ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angle);
+                ctx.beginPath(); ctx.arc(0, 0, s.radius, -Math.PI3, Math.PI3);
+                ctx.strokeStyle = s.color; ctx.lineWidth = 6; ctx.globalAlpha = s.life  10;
+                ctx.stroke(); ctx.restore();
+                s.life--;
+                if(s.life = 0) slashEffects.splice(i, 1);
+            }
+
+            enemies.forEach(e = e.draw());
+            projectiles.forEach(p = p.draw());
+
+             --- SAVAŞÇI HIYAR ÇİZİMİ ---
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            
+             Gövde
+            ctx.fillStyle = #2ecc71; 
+            ctx.strokeStyle = #145a32; 
+            ctx.lineWidth = 3;
+            ctx.beginPath(); 
+            ctx.ellipse(0, 0, player.radius + 12, player.radius - 2, 0, 0, Math.PI  2); 
+            ctx.fill(); 
+            ctx.stroke();
+
+             Pütürler (Dokusal detaylar)
+            ctx.fillStyle = #1e8449;
+            ctx.beginPath(); ctx.arc(-10, -5, 2.5, 0, Math.PI2); ctx.fill();
+            ctx.beginPath(); ctx.arc(-5, 5, 2, 0, Math.PI2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, -7, 2, 0, Math.PI2); ctx.fill();
+
+             Gözler (İleri bakıyor)
+            ctx.fillStyle = #fff;
+            ctx.beginPath(); ctx.arc(10, -5, 3, 0, Math.PI2); ctx.fill();
+            ctx.beginPath(); ctx.arc(10, 5, 3, 0, Math.PI2); ctx.fill();
+            
+            ctx.fillStyle = #000;
+            ctx.beginPath(); ctx.arc(11, -5, 1.5, 0, Math.PI2); ctx.fill();
+            ctx.beginPath(); ctx.arc(11, 5, 1.5, 0, Math.PI2); ctx.fill();
+
+             Neon Yeşil Kılıç
+            if(player.weapon !== Yay) {
+                 Neon Parlama
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = #39ff14; 
+                ctx.fillStyle = #baffc9; 
+                ctx.fillRect(5, 8, 35, 4); 
+                
+                 Kabza
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = #555;
+                ctx.fillRect(3, 6, 5, 8);  
+            }
+
+            ctx.restore();
+            ctx.restore();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            document.getElementById(story-screen).classList.add(hidden);
+            document.getElementById(ui-layer).classList.remove(hidden);
+            state = PLAYING;
+        }
+
+        function triggerWaveClear() {
+            state = UPGRADE;
+            player.maxHp += 20; player.hp = player.maxHp;
+            map.width += 200; map.height += 200;
+            document.getElementById(ui-layer).classList.add(hidden);
+            document.getElementById(upgrade-screen).classList.remove(hidden);
+            
+            let available = allUpgrades.filter(u = !u.minWave  wave = u.minWave);
+            available.sort(() = 0.5 - Math.random());
+            let container = document.getElementById(cards-container);
+            container.innerHTML = ;
+            available.slice(0, 2).forEach(c = {
+                let div = document.createElement(div);
+                div.className = card;
+                div.innerHTML = `span class=type${c.type}spanh3${c.name}h3p${c.desc}p`;
+                div.onclick = () = applyUpgrade(c);
+                container.appendChild(div);
+            });
+        }
+
+        function applyUpgrade(upgrade) {
+            if(upgrade.type === Silah) player.weapon = upgrade.name;
+            if(upgrade.type === Ünvan) { player.title = upgrade.name; player.dmgMult = 2; }
+            if(upgrade.id === hiz) player.speed += 1.5;
+            if(upgrade.id === can_calma) player.lifeSteal += 2;
+
+            wave++; enemiesKilled = 0; enemiesToKill = 10 + (wave  5);
+            enemies = []; projectiles = [];
+            document.getElementById(upgrade-screen).classList.add(hidden);
+            document.getElementById(ui-layer).classList.remove(hidden);
+            state = PLAYING;
+        }
+
+        function updateUI() {
+            document.getElementById(wave-text).innerText = Dalga  + wave;
+            let pct = Math.max(0, (player.hp  player.maxHp)  100);
+            document.getElementById(hp-bar).style.width = pct + %;
+            document.getElementById(hp-text).innerText = Math.floor(player.hp) +    + player.maxHp;
+            document.getElementById(enemy-count).innerText = (enemiesToKill - enemiesKilled);
+            document.getElementById(cd-special).style.height = (player.specialTimer  player.specialCooldown)  100 + %;
+        }
+
+        function gameOver() {
+            state = GAMEOVER;
+            document.getElementById(ui-layer).classList.add(hidden);
+            document.getElementById(gameover-screen).classList.remove(hidden);
+            document.getElementById(final-stats).innerText = `Dalga ${wave}  Silah ${player.weapon}`;
+        }
+
+        gameLoop();
+    script
+body
+html
